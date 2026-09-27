@@ -1,0 +1,705 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7a8b-9c0d-e1f2a3b4c5d6",
+    "name": "RikkeiBank Microservices Banking System API",
+    "description": "Comprehensive Postman collection for RikkeiBank Microservices system covering API Gateway, Identity, Customer, Staff, Account, Transaction (Saga), and Notification services.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "gateway_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "teller_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customer_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Identity & Auth Service",
+      "item": [
+        {
+          "name": "Register Admin User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123456\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/register",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Teller User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"teller01\",\n  \"password\": \"Teller@123456\",\n  \"role\": \"TELLER\",\n  \"staffId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/register",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Customer User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"customer01\",\n  \"password\": \"Customer@123456\",\n  \"role\": \"CUSTOMER\",\n  \"customerId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/register",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.collectionVariables.set('admin_token', jsonData.accessToken);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/login",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login Teller",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.collectionVariables.set('teller_token', jsonData.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"teller01\",\n  \"password\": \"Teller@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/login",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.collectionVariables.set('customer_token', jsonData.accessToken);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"customer01\",\n  \"password\": \"Customer@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/login",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token (Seamless Session)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/refresh",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Admin Force Revoke User (Immediate Logout)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/revoke/3",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "revoke", "3"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Customer Management Service",
+      "item": [
+        {
+          "name": "Create Customer (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyen Van An\",\n  \"email\": \"nguyenvanan@rikkeibank.com\",\n  \"phone\": \"0987654321\",\n  \"address\": \"Keangnam Landmark, Hanoi\",\n  \"dateOfBirth\": \"1992-08-15\",\n  \"identityNumber\": \"001092000001\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/customers",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "customers"]
+            }
+          }
+        },
+        {
+          "name": "Create Customer 2 (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Tran Thi Binh\",\n  \"email\": \"tranthibinh@rikkeibank.com\",\n  \"phone\": \"0912345678\",\n  \"address\": \"District 1, Ho Chi Minh City\",\n  \"dateOfBirth\": \"1996-03-22\",\n  \"identityNumber\": \"001096000002\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/customers",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "customers"]
+            }
+          }
+        },
+        {
+          "name": "List All Customers (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/customers",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "customers"]
+            }
+          }
+        },
+        {
+          "name": "Get Customer By ID (Redis Cache-Aside)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/customers/1",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "customers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Customer (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyen Van An Updated\",\n  \"email\": \"nguyenvanan.updated@rikkeibank.com\",\n  \"phone\": \"0987654321\",\n  \"address\": \"Cau Giay, Hanoi\",\n  \"dateOfBirth\": \"1992-08-15\",\n  \"identityNumber\": \"001092000001\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/customers/1",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "customers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Unauthorized Test (No Token -> 401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/customers",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "customers"]
+            }
+          }
+        },
+        {
+          "name": "Forbidden Test (Customer Accessing Admin API -> 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/customers",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "customers"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Staff Management Service",
+      "item": [
+        {
+          "name": "Create Staff (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Hoang Minh Teller\",\n  \"email\": \"hoangminh@rikkeibank.com\",\n  \"phone\": \"0977889900\",\n  \"position\": \"TELLER\",\n  \"department\": \"Counter Operations\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/staffs",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "staffs"]
+            }
+          }
+        },
+        {
+          "name": "List All Staff (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/staffs",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "staffs"]
+            }
+          }
+        },
+        {
+          "name": "Get Staff By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/staffs/1",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "staffs", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Account & Account Type Service",
+      "item": [
+        {
+          "name": "Create Account Type - Savings (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"typeName\": \"SAVINGS\",\n  \"description\": \"Tiet kiem co ky han 6 thang\",\n  \"interestRate\": 6.2\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/account-types",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "account-types"]
+            }
+          }
+        },
+        {
+          "name": "Create Account Type - Checking (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"typeName\": \"CHECKING\",\n  \"description\": \"Tai khoan thanh toan khong ky han\",\n  \"interestRate\": 0.5\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/account-types",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "account-types"]
+            }
+          }
+        },
+        {
+          "name": "List Account Types",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/account-types",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "account-types"]
+            }
+          }
+        },
+        {
+          "name": "Create Account for Customer 1 (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 1,\n  \"accountTypeId\": 1,\n  \"initialBalance\": 10000000.00,\n  \"currency\": \"VND\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/accounts",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "accounts"]
+            }
+          }
+        },
+        {
+          "name": "Create Account for Customer 2 (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 2,\n  \"accountTypeId\": 1,\n  \"initialBalance\": 5000000.00,\n  \"currency\": \"VND\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/accounts",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "accounts"]
+            }
+          }
+        },
+        {
+          "name": "List All Accounts (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/accounts",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "accounts"]
+            }
+          }
+        },
+        {
+          "name": "Get Accounts By Customer ID (CUSTOMER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/accounts/customer/1",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "accounts", "customer", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Transaction & Saga Orchestrator",
+      "item": [
+        {
+          "name": "Transfer Money (Saga 5-Step Flow)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountNumber\": \"RKB1000000001\",\n  \"destinationAccountNumber\": \"RKB1000000002\",\n  \"amount\": 1500000.00,\n  \"currency\": \"VND\",\n  \"description\": \"Chuyen tien tiep khach thang 9\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/transactions/transfer",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "transactions", "transfer"]
+            }
+          }
+        },
+        {
+          "name": "Transfer Fail - Insufficient Balance",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountNumber\": \"RKB1000000001\",\n  \"destinationAccountNumber\": \"RKB1000000002\",\n  \"amount\": 999999999.00,\n  \"currency\": \"VND\",\n  \"description\": \"Transfer exceeding balance\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/transactions/transfer",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "transactions", "transfer"]
+            }
+          }
+        },
+        {
+          "name": "List All Transactions (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/transactions",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "transactions"]
+            }
+          }
+        },
+        {
+          "name": "View Today Transactions (TELLER Scope Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teller_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/transactions/today",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "transactions", "today"]
+            }
+          }
+        },
+        {
+          "name": "View Account Transaction History (CUSTOMER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/transactions/account/RKB1000000001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "transactions", "account", "RKB1000000001"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Notification Service (Kafka Event-Driven)",
+      "item": [
+        {
+          "name": "Get Notifications by Account (CUSTOMER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/notifications/account/RKB1000000001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "notifications", "account", "RKB1000000001"]
+            }
+          }
+        },
+        {
+          "name": "List All Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/notifications",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/notifications/1/read",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "notifications", "1", "read"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Infrastructure & Fault Tolerance",
+      "item": [
+        {
+          "name": "Eureka Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8761",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8761"
+            }
+          }
+        },
+        {
+          "name": "Config Server Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8888/actuator/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8888",
+              "path": ["actuator", "health"]
+            }
+          }
+        },
+        {
+          "name": "Gateway Actuator Routes",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/actuator/gateway/routes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["actuator", "gateway", "routes"]
+            }
+          }
+        },
+        {
+          "name": "Transaction Service Circuit Breakers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8085/actuator/circuitbreakers",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8085",
+              "path": ["actuator", "circuitbreakers"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
